@@ -12,3 +12,8 @@ resolver = "2"
 # regardless of the "global" setting for `overflow-checks` on the `dev` profile.
 [profile.dev.package.copy]
 overflow-checks = true
+
+
+[profile.dev]
+# Disable overflow checks
+overflow-checks = false

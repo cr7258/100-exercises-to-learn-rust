@@ -12,8 +12,10 @@ mod tests {
     use std::mem::size_of;
 
     #[test]
+    // A `String` on a 64-bit machine takes 24 bytes on the stack:
+    // 8 bytes for the pointer, 8 bytes for length, and 8 bytes for capacity.
     fn string_size() {
-        assert_eq!(size_of::<String>(), todo!());
+        assert_eq!(size_of::<String>(), 24);
     }
 
     #[test]
@@ -23,6 +25,6 @@ mod tests {
         // but, in general, the memory layout of structs is a more complex topic.
         // If you're curious, check out the "Type layout" section of The Rust Reference
         // https://doc.rust-lang.org/reference/type-layout.html for more information.
-        assert_eq!(size_of::<Ticket>(), todo!());
+        assert_eq!(size_of::<Ticket>(), 72);
     }
 }
