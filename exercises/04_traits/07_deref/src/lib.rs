@@ -12,11 +12,12 @@ pub struct Ticket {
 
 impl Ticket {
     pub fn title(&self) -> &str {
-        todo!()
+        // `trim` returns a `&str`, so we don't need to dereference it
+        self.title.trim()
     }
 
     pub fn description(&self) -> &str {
-        todo!()
+        self.description.trim()
     }
 }
 

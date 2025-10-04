@@ -8,12 +8,44 @@ enum TicketNewError {
     DescriptionError(String),
 }
 
+// Implement Debug trait
+impl std::fmt::Debug for TicketNewError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TicketNewError::TitleError(msg) => write!(f, "TitleError({:?})", msg),
+            TicketNewError::DescriptionError(msg) => write!(f, "DescriptionError({:?})", msg),
+        }
+    }
+}
+
+// Implement Display trait
+impl std::fmt::Display for TicketNewError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TicketNewError::TitleError(msg) => write!(f, "{}", msg),
+            TicketNewError::DescriptionError(msg) => write!(f, "{}", msg),
+        }
+    }
+}
+
+// Implement Error trait
+impl std::error::Error for TicketNewError {}
+
 // TODO: `easy_ticket` should panic when the title is invalid, using the error message
 //   stored inside the relevant variant of the `TicketNewError` enum.
 //   When the description is invalid, instead, it should use a default description:
 //   "Description not provided".
 fn easy_ticket(title: String, description: String, status: Status) -> Ticket {
-    todo!()
+    match Ticket::new(title.clone(), description.clone(), status.clone()) {
+        Ok(ticket) => ticket,
+        Err(e) => match e {
+            TicketNewError::TitleError(e) => panic!("{}", e),
+            TicketNewError::DescriptionError(e) => {
+                Ticket::new(title, "Description not provided".to_string(), status)
+                    .expect(e.as_str())
+            }
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
