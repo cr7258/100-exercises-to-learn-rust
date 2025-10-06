@@ -1,10 +1,65 @@
+use tokio::io;
 use tokio::net::TcpListener;
 
 // TODO: write an echo server that accepts TCP connections on two listeners, concurrently.
 //  Multiple connections (on the same listeners) should be processed concurrently.
 //  The received data should be echoed back to the client.
+
+// Method 1, tokio::join! runs multiple async tasks concurrently and waits until all of them finish
+// pub async fn echoes(first: TcpListener, second: TcpListener) -> Result<(), anyhow::Error> {
+//     let h1 = tokio::spawn(async move {
+//         loop {
+//             if let Ok((mut socket, addr)) = first.accept().await {
+//                 println!("Listener 1 accepted: {}", addr);
+//                 tokio::spawn(async move {
+//                     let (mut reader, mut writer) = socket.into_split();
+//                     let _ = io::copy(&mut reader, &mut writer).await;
+//                 });
+//             }
+//         }
+//     });
+//
+//     let h2 = tokio::spawn(async move {
+//         loop {
+//             if let Ok((mut socket, addr)) = second.accept().await {
+//                 println!("Listener 2 accepted: {}", addr);
+//                 tokio::spawn(async move {
+//                     let (mut reader, mut writer) = socket.into_split();
+//                     let _ = io::copy(&mut reader, &mut writer).await;
+//                 });
+//             }
+//         }
+//     });
+//
+//     let _ = tokio::join!(h1, h2);
+//     Ok(())
+// }
+
+// Method 2: tokio::select! runs multiple async tasks concurrently and continues as soon as one of them finishes
 pub async fn echoes(first: TcpListener, second: TcpListener) -> Result<(), anyhow::Error> {
-    todo!()
+    loop {
+        tokio::select! {
+            Ok((mut socket, addr)) = first.accept() => {
+                println!("Accepted connection from {} on listener 1", addr);
+                tokio::spawn(async move {
+                    let (mut reader, mut writer) = socket.split();
+                    if let Err(e) = io::copy(&mut reader, &mut writer).await {
+                        eprintln!("Error on listener 1 ({}): {:?}", addr, e);
+                    }
+                });
+            }
+
+            Ok((mut socket, addr)) = second.accept() => {
+                println!("Accepted connection from {} on listener 2", addr);
+                tokio::spawn(async move {
+                    let (mut reader, mut writer) = socket.split();
+                    if let Err(e) = io::copy(&mut reader, &mut writer).await {
+                        eprintln!("Error on listener 2 ({}): {:?}", addr, e);
+                    }
+                });
+            }
+        }
+    }
 }
 
 #[cfg(test)]
